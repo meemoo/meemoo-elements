@@ -39,8 +39,13 @@ class MmWebcam extends HTMLElement {
   }
 
   connectedCallback() {
-    this.appendChild(template.content.cloneNode(true));
-    this.videoEl = this.querySelector(".mm-webcam-video");
+    // TODO: do this correctly?
+    let videoEl = this.querySelector(".mm-webcam-video");
+    if (!videoEl) {
+      this.appendChild(template.content.cloneNode(true));
+      videoEl = this.querySelector(".mm-webcam-video");
+    }
+    this.videoEl = videoEl;
 
     this.__camId = null;
     this.camInfo = [];

@@ -76,9 +76,9 @@ class MmDebug extends HTMLElement {
     inspectEl.innerHTML = "";
 
     const { name, tag, members } = mmChild.mmManifest();
-    const h2 = document.createElement("h2");
-    h2.textContent = tag;
-    inspectEl.appendChild(h2);
+    const tagEl = document.createElement("div");
+    tagEl.textContent = tag;
+    inspectEl.appendChild(tagEl);
 
     for (let member of members) {
       const { kind, name, type, options } = member;
