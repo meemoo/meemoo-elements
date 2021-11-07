@@ -50,6 +50,10 @@ class MmWebcam extends HTMLElement {
     this.__camId = null;
     this.camInfo = [];
 
+    this.enumerateDevices();
+  }
+
+  enumerateDevices() {
     if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
       navigator.mediaDevices
         .enumerateDevices()
@@ -84,6 +88,8 @@ class MmWebcam extends HTMLElement {
         } catch (error) {
           this.videoEl.src = URL.createObjectURL(this.stream);
         }
+        // Safari only lists them after connecting to one of them
+        this.enumerateDevices();
       })
       .catch(() => {});
   }
@@ -91,6 +97,7 @@ class MmWebcam extends HTMLElement {
   stop() {
     if (this.stream) {
       this.stream.getTracks().forEach((track) => track.stop());
+      this.stream = null;
     }
   }
 }

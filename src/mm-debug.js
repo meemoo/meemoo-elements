@@ -114,6 +114,7 @@ class MmDebug extends HTMLElement {
             optionEl.className = "mm-debug-select";
             optionEl.value = value;
             optionEl.textContent = label;
+            optionEl.selected = mmChild[name] === value;
             select.appendChild(optionEl);
           }
           inspectEl.appendChild(select);
