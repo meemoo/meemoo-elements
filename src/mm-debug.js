@@ -1,7 +1,7 @@
-const template = document.createElement("template");
-template.innerHTML = `
-  <div class="mm-debug-child"></div>
-  <div class="mm-debug-child-inspect"></div>
+const childTemplate = document.createElement("template");
+childTemplate.innerHTML = `
+  <div class="mm-debug--child"></div>
+  <div class="mm-debug--inspect"></div>
 `;
 
 class MmDebug extends HTMLElement {
@@ -15,7 +15,7 @@ class MmDebug extends HTMLElement {
 
   set hidden(val) {
     this.__hidden = val;
-    this.querySelectorAll(".mm-debug-child-inspect").forEach((el) => {
+    this.querySelectorAll(".mm-debug--inspect").forEach((el) => {
       el.style.display = val ? "none" : "block";
     });
   }
@@ -47,17 +47,18 @@ class MmDebug extends HTMLElement {
         }
       }
       for (let mmChild of mmChildren) {
-        const fragment = template.content.cloneNode(true);
+        const fragment = childTemplate.content.cloneNode(true);
 
         const el = document.createElement("div");
         el.className = "mm-debug";
-        this.appendChild(el);
         el.appendChild(fragment);
 
-        const childEl = el.querySelector(".mm-debug-child");
+        mmChild.replaceWith(el);
+
+        const childEl = el.querySelector(".mm-debug--child");
         childEl.appendChild(mmChild);
 
-        const inspectEl = el.querySelector(".mm-debug-child-inspect");
+        const inspectEl = el.querySelector(".mm-debug--inspect");
         this.mountInspector(mmChild, inspectEl);
 
         mmChild.addEventListener("mm-manifest-changed", () => {
@@ -72,19 +73,25 @@ class MmDebug extends HTMLElement {
       this.hidden = true;
     }
   }
+
+  disconnectedCallback() {
+    // TODO: removeEventListener?
+  }
+
   mountInspector(mmChild, inspectEl) {
     inspectEl.innerHTML = "";
 
     const { name, tag, members } = mmChild.mmManifest();
-    const tagEl = document.createElement("div");
-    tagEl.textContent = tag;
+    const tagEl = document.createElement("span");
+    tagEl.className = "mm-debug--tag";
+    tagEl.textContent = tag + ": ";
     inspectEl.appendChild(tagEl);
 
     for (let member of members) {
       const { kind, name, type, options } = member;
       if (kind === "method") {
         const buttonEl = document.createElement("button");
-        buttonEl.className = "mm-debug-button";
+        buttonEl.className = "mm-debug--button";
         buttonEl.innerText = name;
         buttonEl.addEventListener("click", () => {
           mmChild[name]();
@@ -111,7 +118,7 @@ class MmDebug extends HTMLElement {
           });
           for (let { label, value } of options) {
             const optionEl = document.createElement("option");
-            optionEl.className = "mm-debug-select";
+            optionEl.className = "mm-debug--select";
             optionEl.value = value;
             optionEl.textContent = label;
             optionEl.selected = mmChild[name] === value;
@@ -125,3 +132,10 @@ class MmDebug extends HTMLElement {
 }
 
 customElements.define("mm-debug", MmDebug);
+
+// class MmDebugChild extends HTMLElement {
+//   constructor() {
+//     super();
+//   }
+//   connectedCallback() {}
+// }

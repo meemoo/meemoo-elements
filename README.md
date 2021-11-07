@@ -23,6 +23,7 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
 
 ### TBD
 
+- [ ] Better practices for basic custom element mounting and updating stuff 😅
 - [ ] Enumerate events, like out-ports in meemoo.org
 - [ ] "Wiring" listeners?
 
@@ -30,4 +31,4 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
 
 ### Why no shadow DOM?
 
-I don't want to encapsulate DOM or styles with these, to make it easier to style them from the outside. This should make it possible to use and style these with Webflow, by making styles for eg `.mm-debug-button` and `.mm-debug-select` etc.
+I don't want to encapsulate DOM or styles with these, to make it easier to style them from the outside. This should make it possible to use and style these with Webflow, by making styles for `.mm-debug--button`, `.mm-debug--select` etc.

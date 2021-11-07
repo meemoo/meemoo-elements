@@ -1,11 +1,16 @@
-const template = document.createElement("template");
-template.innerHTML = `
-  <video class="mm-webcam-video" autoplay></video>
+const childTemplate = document.createElement("template");
+childTemplate.innerHTML = `
+  <video class="mm-webcam--video" autoplay></video>
 `;
 
 class MmWebcam extends HTMLElement {
   constructor() {
     super();
+
+    this.videoEl = null;
+    this.stream = null;
+    this.__camId = null;
+    this.camInfo = [];
   }
 
   static get observedAttributes() {
@@ -39,18 +44,18 @@ class MmWebcam extends HTMLElement {
   }
 
   connectedCallback() {
-    // TODO: do this correctly?
-    let videoEl = this.querySelector(".mm-webcam-video");
+    // TODO: render without needing to check so much?
+    let videoEl = this.querySelector(".mm-webcam--video");
     if (!videoEl) {
-      this.appendChild(template.content.cloneNode(true));
-      videoEl = this.querySelector(".mm-webcam-video");
+      this.appendChild(childTemplate.content.cloneNode(true));
+      videoEl = this.querySelector(".mm-webcam--video");
     }
     this.videoEl = videoEl;
-
-    this.__camId = null;
-    this.camInfo = [];
-
     this.enumerateDevices();
+  }
+
+  disconnectedCallback() {
+    this.stop();
   }
 
   enumerateDevices() {
@@ -97,7 +102,6 @@ class MmWebcam extends HTMLElement {
   stop() {
     if (this.stream) {
       this.stream.getTracks().forEach((track) => track.stop());
-      this.stream = null;
     }
   }
 }
