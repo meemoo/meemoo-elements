@@ -9,7 +9,8 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
 - No build
 - No dependencies
 - Pull in each element with one script tag
-- `<mm-debug>` will make some UI for setting attributes and calling methods on it's child `mm-*` elements.
+- `<mm-*>` elements have `mmManifest` to call, which will return some info about what you can call or set on it
+- `<mm-debug>` will make some UI for setting attributes and calling methods on it's child `<mm-*>` elements
 
 ```html
 <mm-debug>
