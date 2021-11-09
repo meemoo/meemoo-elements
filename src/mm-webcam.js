@@ -53,13 +53,13 @@ class MmWebcam extends HTMLElement {
         // Read-only members?
         { kind: "field", name: "frameRate", type: "number" },
       ],
-      events: [
-        {
-          name: "mm-webcam-start",
-          description:
-            "fired when permission is granted and webcam stream starts",
-        },
-      ],
+      // events: [
+      //   {
+      //     name: "mm-webcam-start",
+      //     description:
+      //       "fired when permission is granted and webcam stream starts",
+      //   },
+      // ],
     };
   }
 
