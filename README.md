@@ -2,7 +2,7 @@
 
 WIP experiment to do some meemoo.org things with modern vanilla web components.
 
-Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958739538448389) on [Custom Elements Manifest](https://dev.to/open-wc/introducing-custom-elements-manifest-gkk). I'm not using it exactly, but I'm borrowing some of the concepts.
+Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958739538448389) on [Custom Elements Manifest](https://dev.to/open-wc/introducing-custom-elements-manifest-gkk). I'm not using it exactly, but I'm borrowing some of the ideas.
 
 ## Concept
 
@@ -10,7 +10,7 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
 - No dependencies
 - Pull in each element with one script tag
 - `<mm-*>` elements have `mmManifest` to call, which will return some info about what you can call or set on it
-- `<mm-debug>` will make some UI for setting attributes and calling methods on it's child `<mm-*>` elements
+- `<mm-debug>` will make some UI for setting attributes and calling methods on its child `<mm-*>` elements
 
 ```html
 <mm-debug>

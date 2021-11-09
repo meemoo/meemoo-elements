@@ -1,0 +1,29 @@
+{
+  "name": "@meemoo/meemoo-elements",
+  "version": "0.0.1",
+  "description": "Do some meemoo.org things (playful media apps) with modern vanilla web components.",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meemoo/meemoo-elements.git"
+  },
+  "keywords": [
+    "meemoo",
+    "webcam",
+    "canvas",
+    "svg",
+    "customelement",
+    "webcomponent",
+    "media",
+    "metamedia"
+  ],
+  "author": "@forresto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/meemoo/meemoo-elements/issues"
+  },
+  "homepage": "https://github.com/meemoo/meemoo-elements#readme"
+}

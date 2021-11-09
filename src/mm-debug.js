@@ -1,6 +1,5 @@
 const childTemplate = document.createElement("template");
 childTemplate.innerHTML = `
-  <div class="mm-debug--child"></div>
   <div class="mm-debug--inspect"></div>
 `;
 
@@ -14,19 +13,19 @@ class MmDebug extends HTMLElement {
   }
 
   set hidden(val) {
-    this.__hidden = val;
-    this.querySelectorAll(".mm-debug--inspect").forEach((el) => {
+    this._hidden = val;
+    this.querySelectorAll(".mm-debug").forEach((el) => {
       el.style.display = val ? "none" : "block";
     });
   }
   get hidden() {
-    return this.__hidden;
+    return this._hidden;
   }
 
   mmManifest() {
     return {
       name: "MmDebug",
-      tag: "mm-debug",
+      tagName: "mm-debug",
       members: [{ kind: "field", name: "hidden", type: "boolean" }],
     };
   }
@@ -53,10 +52,7 @@ class MmDebug extends HTMLElement {
         el.className = "mm-debug";
         el.appendChild(fragment);
 
-        mmChild.replaceWith(el);
-
-        const childEl = el.querySelector(".mm-debug--child");
-        childEl.appendChild(mmChild);
+        mmChild.after(el);
 
         const inspectEl = el.querySelector(".mm-debug--inspect");
         this.mountInspector(mmChild, inspectEl);
@@ -81,10 +77,10 @@ class MmDebug extends HTMLElement {
   mountInspector(mmChild, inspectEl) {
     inspectEl.innerHTML = "";
 
-    const { name, tag, members } = mmChild.mmManifest();
-    const tagEl = document.createElement("span");
+    const { name, tagName, members, events } = mmChild.mmManifest();
+    const tagEl = document.createElement("div");
     tagEl.className = "mm-debug--tag";
-    tagEl.textContent = tag + ": ";
+    tagEl.textContent = tagName + ":";
     inspectEl.appendChild(tagEl);
 
     for (let member of members) {
@@ -112,20 +108,51 @@ class MmDebug extends HTMLElement {
           inspectEl.appendChild(labelEl);
         }
         if (options) {
-          const select = document.createElement("select");
-          select.addEventListener("change", () => {
-            mmChild[name] = select.value;
+          const selectEl = document.createElement("select");
+          selectEl.className = "mm-debug--select";
+          selectEl.addEventListener("change", () => {
+            mmChild[name] = selectEl.value;
           });
           for (let { label, value } of options) {
             const optionEl = document.createElement("option");
-            optionEl.className = "mm-debug--select";
             optionEl.value = value;
             optionEl.textContent = label;
             optionEl.selected = mmChild[name] === value;
-            select.appendChild(optionEl);
+            selectEl.appendChild(optionEl);
           }
-          inspectEl.appendChild(select);
+          inspectEl.appendChild(selectEl);
         }
+      }
+    }
+    /** TODO: we lose all of this DOM state when mountInspector wipes stuff
+     * out... think about if/how to expose/inspect events */
+    if (events) {
+      for (let event of events) {
+        const labelEl = document.createElement("label");
+        labelEl.textContent = event.name;
+        const inputEl = document.createElement("input");
+        inputEl.className = "mm-debug--checkbox";
+        inputEl.type = "checkbox";
+        labelEl.appendChild(inputEl);
+        inspectEl.appendChild(labelEl);
+
+        // const eventDebugEl = document.createElement("span");
+        // inspectEl.appendChild(eventDebugEl);
+
+        // const updateDebug = (e) => {
+        //   // TODO: ???
+        //   if (event.property) {
+        //     eventDebugEl.textContent = "🛎";
+        //   }
+        // };
+
+        // inputEl.addEventListener("change", (e) => {
+        //   if (e.target.checked) {
+        //     mmChild.addEventListener(event.name, updateDebug);
+        //   } else {
+        //     mmChild.removeEventListener(event.name, updateDebug);
+        //   }
+        // });
       }
     }
   }
