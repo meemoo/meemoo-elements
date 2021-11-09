@@ -97,8 +97,10 @@ class MmDebug extends HTMLElement {
       if (kind === "field") {
         if (type === "boolean") {
           const labelEl = document.createElement("label");
+          labelEl.className = "mm-debug--label";
           labelEl.textContent = name;
           const inputEl = document.createElement("input");
+          inputEl.className = "mm-debug--checkbox";
           inputEl.type = "checkbox";
           inputEl.checked = mmChild[name];
           inputEl.addEventListener("change", () => {
@@ -129,6 +131,7 @@ class MmDebug extends HTMLElement {
     if (events) {
       for (let event of events) {
         const labelEl = document.createElement("label");
+        labelEl.className = "mm-debug--label";
         labelEl.textContent = event.name;
         const inputEl = document.createElement("input");
         inputEl.className = "mm-debug--checkbox";
