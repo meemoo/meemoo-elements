@@ -1,6 +1,6 @@
 {
   "name": "@meemoo/meemoo-elements",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Do some meemoo.org things (playful media apps) with modern vanilla web components.",
   "main": "index.html",
   "scripts": {

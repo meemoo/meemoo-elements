@@ -36,11 +36,12 @@ class MmDebug extends HTMLElement {
     const definedPromises = [...undefinedElements].map((el) =>
       customElements.whenDefined(el.localName)
     );
+    const allElements = this.querySelectorAll("*");
     const mmChildren = [];
 
     // Find the children with mmManifest
     Promise.all(definedPromises).then((defs) => {
-      for (let child of this.children) {
+      for (let child of allElements) {
         if (child.mmManifest) {
           mmChildren.push(child);
         }
@@ -105,6 +106,23 @@ class MmDebug extends HTMLElement {
           inputEl.checked = mmChild[name];
           inputEl.addEventListener("change", () => {
             mmChild[name] = inputEl.checked;
+          });
+          labelEl.appendChild(inputEl);
+          inspectEl.appendChild(labelEl);
+        }
+        if (type === "number") {
+          const labelEl = document.createElement("label");
+          labelEl.className = "mm-debug--label";
+          labelEl.textContent = name;
+          const inputEl = document.createElement("input");
+          inputEl.className = "mm-debug--checkbox";
+          inputEl.type = "number";
+          inputEl.value = mmChild[name];
+          inputEl.addEventListener("change", () => {
+            // To decide: directly set member or attribute? Element needs to
+            // react to changes. This says both:
+            // https://developers.google.com/web/fundamentals/web-components/best-practices#aim-to-keep-primitive-data-attributes-and-properties-in-sync,-reflecting-from-property-to-attribute,-and-vice-versa.
+            mmChild.setAttribute(name, inputEl.valueAsNumber);
           });
           labelEl.appendChild(inputEl);
           inspectEl.appendChild(labelEl);

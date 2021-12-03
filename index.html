@@ -10,7 +10,15 @@
       }
       .mm-debug--inspect {
         display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      label {
+        display: flex;
         gap: 8px;
+      }
+      input[type="number"] {
+        width: 5em;
       }
     </style>
   </head>
@@ -18,15 +26,34 @@
     <a href="https://github.com/meemoo/meemoo-elements">About</a>
 
     <mm-debug>
-      <mm-debug>
-        <h2>Example 1</h2>
-        <mm-webcam></mm-webcam>
-        <h2>Example 2</h2>
-        <mm-webcam></mm-webcam>
-      </mm-debug>
+      <h2>mm-webcam</h2>
+      <mm-webcam></mm-webcam>
+      <h2>mm-quadwarp</h2>
+      <p>
+        Takes position of 4 corners and adds a transform matrix to the first
+        child. Potentially useful for real-size projections onto a table or
+        object.
+      </p>
+      <mm-quadwarp
+        xtl="10"
+        ytl="550"
+        xtr="680"
+        ytr="480"
+        xbr="660"
+        ybr="1266"
+        xbl="10"
+        ybl="1007"
+      >
+        <iframe src="./static/a4Calibration.pdf" width="720" height="720">
+        </iframe>
+        <!-- <mm-webcam
+          style="width: 640px; height: 480px; background-color: pink"
+        ></mm-webcam> -->
+      </mm-quadwarp>
     </mm-debug>
 
     <script type="module" src="./src/mm-debug.js"></script>
     <script type="module" src="./src/mm-webcam.js"></script>
+    <script type="module" src="./src/mm-quadwarp.js"></script>
   </body>
 </html>
