@@ -17,8 +17,9 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
   <mm-webcam></mm-webcam>
 </mm-debug>
 
-<script type="module" src="./src/mm-debug.js"></script>
-<script type="module" src="./src/mm-webcam.js"></script>
+<!-- Only need the tags for the elements that you use, once, at end of body. -->
+<script type="module" src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-debug.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-webcam.js"></script>
 ```
 
 ### TBD
@@ -36,3 +37,7 @@ I don't want to encapsulate DOM or styles with these, to make it easier to style
 ### Can I use and style these in Webflow?
 
 Yes. Example here: https://meemoo-elements.webflow.io
+
+### Can I use these in ObservableHQ?
+
+Yes. https://observablehq.com/@forresto/mm-webcam
