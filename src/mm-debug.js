@@ -26,7 +26,10 @@ class MmDebug extends HTMLElement {
     return {
       name: "MmDebug",
       tagName: "mm-debug",
-      members: [{ kind: "field", name: "hidden", type: "boolean" }],
+      members: [
+        { kind: "field", name: "hidden", type: "boolean" },
+        // { kind: "field", name: "shallow", type: "boolean" },
+      ],
     };
   }
 
@@ -36,7 +39,9 @@ class MmDebug extends HTMLElement {
     const definedPromises = [...undefinedElements].map((el) =>
       customElements.whenDefined(el.localName)
     );
-    const allElements = this.querySelectorAll("*");
+    const allElements = this.hasAttribute("shallow")
+      ? this.children
+      : this.querySelectorAll("*");
     const mmChildren = [];
 
     // Find the children with mmManifest

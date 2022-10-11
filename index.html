@@ -25,31 +25,45 @@
   <body>
     <a href="https://github.com/meemoo/meemoo-elements">About</a>
 
-    <mm-debug>
-      <h2>mm-webcam</h2>
-      <mm-webcam></mm-webcam>
-      <h2>mm-quadwarp</h2>
-      <p>
-        Takes position of 4 corners and adds a transform matrix to the first
-        child. Potentially useful for real-size projections onto a table or
-        object.
-      </p>
-      <mm-quadwarp
-        xtl="10"
-        ytl="550"
-        xtr="680"
-        ytr="480"
-        xbr="660"
-        ybr="1266"
-        xbl="10"
-        ybl="1007"
-      >
-        <iframe src="./static/a4Calibration.pdf" width="720" height="720">
-        </iframe>
-        <!-- <mm-webcam
-          style="width: 640px; height: 480px; background-color: pink"
-        ></mm-webcam> -->
-      </mm-quadwarp>
+    <!-- This "meta" mm-debug shows the "hidden" control on the inner mm-debug. 🤗 -->
+    <mm-debug shallow>
+      <mm-debug>
+        <h2>mm-webcam</h2>
+        <mm-webcam></mm-webcam>
+        <h2>mm-quadwarp</h2>
+        <p>
+          Takes position of 4 corners and adds a transform matrix to the first
+          child. Potentially useful for real-size projections onto a table or
+          object.
+        </p>
+        <mm-quadwarp
+          xtl="232"
+          ytl="800"
+          xtr="794"
+          ytr="667"
+          xbr="794"
+          ybr="1600"
+          xbl="200"
+          ybl="1185"
+        >
+          <iframe src="./static/a4Calibration.pdf" width="720" height="720">
+          </iframe>
+        </mm-quadwarp>
+        <mm-quadwarp
+          xtl="794"
+          ytl="667"
+          xtr="1241"
+          ytr="805"
+          xbr="1288"
+          ybr="1366"
+          xbl="794"
+          ybl="1600"
+        >
+          <mm-webcam
+            style="width: 640px; height: 480px; background-color: pink"
+          ></mm-webcam>
+        </mm-quadwarp>
+      </mm-debug>
     </mm-debug>
 
     <script type="module" src="./src/mm-debug.js"></script>
