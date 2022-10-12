@@ -6,6 +6,11 @@ childTemplate.innerHTML = `
 class MmDebug extends HTMLElement {
   constructor() {
     super();
+
+    const mountQuery = this.getAttribute("mount");
+    if (mountQuery) {
+      this.mountEl = document.querySelector(mountQuery);
+    }
   }
 
   static get observedAttributes() {
@@ -14,7 +19,7 @@ class MmDebug extends HTMLElement {
 
   set hidden(val) {
     this._hidden = val;
-    this.querySelectorAll(".mm-debug").forEach((el) => {
+    (this.mountEl || this).querySelectorAll(".mm-debug").forEach((el) => {
       el.style.display = val ? "none" : "block";
     });
   }
@@ -28,7 +33,8 @@ class MmDebug extends HTMLElement {
       tagName: "mm-debug",
       members: [
         { kind: "field", name: "hidden", type: "boolean" },
-        // { kind: "field", name: "shallow", type: "boolean" },
+        { kind: "field", name: "shallow", type: "boolean" },
+        { kind: "field", name: "mount", type: "string" },
       ],
     };
   }
@@ -58,7 +64,11 @@ class MmDebug extends HTMLElement {
         el.className = "mm-debug";
         el.appendChild(fragment);
 
-        mmChild.after(el);
+        if (this.mountEl) {
+          this.mountEl.appendChild(el);
+        } else {
+          mmChild.after(el);
+        }
 
         const inspectEl = el.querySelector(".mm-debug--inspect");
         this.mountInspector(mmChild, inspectEl);

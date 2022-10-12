@@ -10,8 +10,13 @@
       }
       .mm-debug--inspect {
         display: flex;
+        /* flex-direction: column; */
         gap: 16px;
         flex-wrap: wrap;
+      }
+      .mm-debug--tag {
+        padding-top: 16px;
+        width: 100%;
       }
       label {
         display: flex;
@@ -20,51 +25,67 @@
       input[type="number"] {
         width: 5em;
       }
+      #debug {
+        position: fixed;
+        top: 8px;
+        right: 8px;
+        border-radius: 8px;
+        border: 1px dashed rgba(0, 0, 0, 0.5);
+        padding: 8px;
+        max-height: 80%;
+        overflow: auto;
+        width: 240px;
+        max-width: 50%;
+      }
     </style>
   </head>
   <body>
     <a href="https://github.com/meemoo/meemoo-elements">About</a>
 
     <!-- This "meta" mm-debug shows the "hidden" control on the inner mm-debug. 🤗 -->
-    <mm-debug shallow>
-      <mm-debug>
-        <h2>mm-webcam</h2>
-        <mm-webcam></mm-webcam>
-        <h2>mm-quadwarp</h2>
-        <p>
-          Takes position of 4 corners and adds a transform matrix to the first
-          child. Potentially useful for real-size projections onto a table or
-          object.
-        </p>
-        <mm-quadwarp
-          xtl="232"
-          ytl="800"
-          xtr="794"
-          ytr="667"
-          xbr="794"
-          ybr="1600"
-          xbl="200"
-          ybl="1185"
-        >
-          <iframe src="./static/a4Calibration.pdf" width="720" height="720">
-          </iframe>
-        </mm-quadwarp>
-        <mm-quadwarp
-          xtl="794"
-          ytl="667"
-          xtr="1241"
-          ytr="805"
-          xbr="1288"
-          ybr="1366"
-          xbl="794"
-          ybl="1600"
-        >
-          <mm-webcam
-            style="width: 640px; height: 480px; background-color: pink"
-          ></mm-webcam>
-        </mm-quadwarp>
-      </mm-debug>
+    <!-- <mm-debug shallow> -->
+    <mm-debug mount="#debug">
+      <h2>mm-webcam</h2>
+      <mm-webcam></mm-webcam>
+      <h2>mm-quadwarp</h2>
+      <p>
+        Takes position of 4 corners and adds a transform matrix to the first
+        child. Potentially useful for real-size projections onto a table or
+        object.
+      </p>
+      <p>The first one shows a PDF in an iframe.</p>
+      <mm-quadwarp
+        xtl="232"
+        ytl="800"
+        xtr="794"
+        ytr="667"
+        xbr="794"
+        ybr="1600"
+        xbl="200"
+        ybl="1185"
+      >
+        <iframe src="./static/a4Calibration.pdf" width="720" height="720">
+        </iframe>
+      </mm-quadwarp>
+      <p>The second one has an mm-webcam inside.</p>
+      <mm-quadwarp
+        xtl="794"
+        ytl="667"
+        xtr="1241"
+        ytr="805"
+        xbr="1288"
+        ybr="1366"
+        xbl="794"
+        ybl="1600"
+      >
+        <mm-webcam
+          style="width: 640px; height: 480px; background-color: pink"
+        ></mm-webcam>
+      </mm-quadwarp>
     </mm-debug>
+    <!-- </mm-debug> -->
+
+    <div id="debug"></div>
 
     <script type="module" src="./src/mm-debug.js"></script>
     <script type="module" src="./src/mm-webcam.js"></script>

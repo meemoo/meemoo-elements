@@ -116,10 +116,10 @@ class MmQuadwarp extends HTMLElement {
         { kind: "field", name: "ytl", type: "number" },
         { kind: "field", name: "xtr", type: "number" },
         { kind: "field", name: "ytr", type: "number" },
-        { kind: "field", name: "xbl", type: "number" },
-        { kind: "field", name: "ybl", type: "number" },
         { kind: "field", name: "xbr", type: "number" },
         { kind: "field", name: "ybr", type: "number" },
+        { kind: "field", name: "xbl", type: "number" },
+        { kind: "field", name: "ybl", type: "number" },
       ],
     };
   }
@@ -161,10 +161,8 @@ class MmQuadwarp extends HTMLElement {
       this.xbr,
       this.ybr
     );
-    console.log(firstChild.offsetLeft, firstChild.offsetTop);
     firstChild.style.transformOrigin = "0 0";
     firstChild.style.transform = transform;
-    console.log(firstChild.offsetLeft, firstChild.offsetTop);
   }
 }
 
