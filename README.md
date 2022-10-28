@@ -18,8 +18,14 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
 </mm-debug>
 
 <!-- Only need the tags for the elements that you use, once, at end of body. -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-debug.js"></script>
-<script type="module" src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-webcam.js"></script>
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-debug.js"
+></script>
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-webcam.js"
+></script>
 ```
 
 ### TBD
@@ -41,3 +47,7 @@ Yes. Example here: https://meemoo-elements.webflow.io
 ### Can I use these in ObservableHQ?
 
 Yes. https://observablehq.com/@forresto/mm-webcam
+
+### Can I use these in Natto.dev?
+
+Yes. https://natto.dev/@forresto/12caeded111241c1a775ed82180a6ca8
