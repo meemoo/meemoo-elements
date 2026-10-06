@@ -92,36 +92,21 @@ function quadWarpMatrix (left, top, w, h, xTL, yTL, xTR, yTR, xBL, yBL, xBR, yBR
 
 }
 
-class MmQuadwarp extends HTMLElement {
+const corners = ["xtl", "ytl", "xtr", "ytr", "xbr", "ybr", "xbl", "ybl"];
+
+export class MmQuadwarp extends HTMLElement {
+  static mmManifest = () =>
+    import("./mm-quadwarp.manifest.js").then((m) => m.default);
+
+  static get observedAttributes() {
+    return corners;
+  }
+
   constructor() {
     super();
-    this.xtl = Number(this.getAttribute("xtl"));
-    this.ytl = Number(this.getAttribute("ytl"));
-    this.xtr = Number(this.getAttribute("xtr"));
-    this.ytr = Number(this.getAttribute("ytr"));
-    this.xbl = Number(this.getAttribute("xbl"));
-    this.ybl = Number(this.getAttribute("ybl"));
-    this.xbr = Number(this.getAttribute("xbr"));
-    this.ybr = Number(this.getAttribute("ybr"));
-  }
-  static get observedAttributes() {
-    return ["xtl", "ytl", "xtr", "ytr", "xbl", "ybl", "xbr", "ybr"];
-  }
-  mmManifest() {
-    return {
-      name: "MmQuadwarp",
-      tagName: "mm-quadwarp",
-      members: [
-        { kind: "field", name: "xtl", type: "number" },
-        { kind: "field", name: "ytl", type: "number" },
-        { kind: "field", name: "xtr", type: "number" },
-        { kind: "field", name: "ytr", type: "number" },
-        { kind: "field", name: "xbr", type: "number" },
-        { kind: "field", name: "ybr", type: "number" },
-        { kind: "field", name: "xbl", type: "number" },
-        { kind: "field", name: "ybl", type: "number" },
-      ],
-    };
+    for (const name of corners) {
+      this["_" + name] = Number(this.getAttribute(name));
+    }
   }
 
   connectedCallback() {
@@ -130,13 +115,12 @@ class MmQuadwarp extends HTMLElement {
 
   disconnectedCallback() {}
   attributeChangedCallback(name, oldValue, newValue) {
-    this[name] = Number(newValue);
-    this.setChildTransform();
+    this[name] = newValue;
   }
 
   setChildTransform() {
     const firstChild = this.children[0];
-    console.log(firstChild.offsetLeft, firstChild.offsetTop);
+    if (!firstChild) return;
 
     firstChild.style.display = "block";
     firstChild.style.position = "absolute";
@@ -164,6 +148,18 @@ class MmQuadwarp extends HTMLElement {
     firstChild.style.transformOrigin = "0 0";
     firstChild.style.transform = transform;
   }
+}
+
+for (const name of corners) {
+  Object.defineProperty(MmQuadwarp.prototype, name, {
+    get() {
+      return this["_" + name];
+    },
+    set(val) {
+      this["_" + name] = Number(val);
+      this.setChildTransform();
+    },
+  });
 }
 
 customElements.define("mm-quadwarp", MmQuadwarp);

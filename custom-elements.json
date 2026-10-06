@@ -1,0 +1,597 @@
+{
+  "schemaVersion": "2.1.0",
+  "readme": "README.md",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/mm-animation.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "customElement": true,
+          "name": "MmAnimation",
+          "tagName": "mm-animation",
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "attributes": [
+            {
+              "name": "fps",
+              "fieldName": "fps",
+              "type": {
+                "text": "number"
+              },
+              "default": "12"
+            },
+            {
+              "name": "max-length",
+              "fieldName": "maxLength",
+              "type": {
+                "text": "number"
+              },
+              "default": "0"
+            }
+          ],
+          "members": [
+            {
+              "kind": "method",
+              "name": "push",
+              "parameters": [
+                {
+                  "name": "image",
+                  "type": {
+                    "text": "CanvasImageSource"
+                  },
+                  "mm": {
+                    "type": "image"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "clear"
+            },
+            {
+              "kind": "method",
+              "name": "send"
+            },
+            {
+              "kind": "field",
+              "name": "fps",
+              "type": {
+                "text": "number"
+              },
+              "default": "12",
+              "mm": {
+                "min": 0
+              }
+            },
+            {
+              "kind": "field",
+              "name": "maxLength",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "mm": {
+                "min": 0,
+                "step": 1
+              }
+            },
+            {
+              "kind": "field",
+              "name": "animation",
+              "readonly": true,
+              "type": {
+                "text": "{width: number, height: number, fps: number, frames: HTMLCanvasElement[]}"
+              },
+              "mm": {
+                "type": "animation"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "animation",
+              "type": {
+                "text": "CustomEvent<{width: number, height: number, fps: number, frames: HTMLCanvasElement[]}>"
+              },
+              "mm": {
+                "type": "animation"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "MmAnimation",
+          "declaration": {
+            "name": "MmAnimation",
+            "module": "src/mm-animation.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "mm-animation",
+          "declaration": {
+            "name": "MmAnimation",
+            "module": "src/mm-animation.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/mm-debug.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "customElement": true,
+          "name": "MmDebug",
+          "tagName": "mm-debug",
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "attributes": [
+            {
+              "name": "hidden",
+              "fieldName": "hidden",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "shallow",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "mount",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "hidden",
+              "type": {
+                "text": "boolean"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "MmDebug",
+          "declaration": {
+            "name": "MmDebug",
+            "module": "src/mm-debug.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "mm-debug",
+          "declaration": {
+            "name": "MmDebug",
+            "module": "src/mm-debug.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/mm-graph.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "customElement": true,
+          "name": "MmGraph",
+          "tagName": "mm-graph",
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "attributes": [
+            {
+              "name": "src",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "modules",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "customElement": true,
+          "name": "MmWire",
+          "tagName": "mm-wire",
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "attributes": [
+            {
+              "name": "from",
+              "fieldName": "from",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "out",
+              "fieldName": "out",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "to",
+              "fieldName": "to",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "in",
+              "fieldName": "in",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "from",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "out",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "to",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "in",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "MmGraph",
+          "declaration": {
+            "name": "MmGraph",
+            "module": "src/mm-graph.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "mm-graph",
+          "declaration": {
+            "name": "MmGraph",
+            "module": "src/mm-graph.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "MmWire",
+          "declaration": {
+            "name": "MmWire",
+            "module": "src/mm-graph.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "mm-wire",
+          "declaration": {
+            "name": "MmWire",
+            "module": "src/mm-graph.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/mm-quadwarp.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "customElement": true,
+          "name": "MmQuadwarp",
+          "tagName": "mm-quadwarp",
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "attributes": [
+            {
+              "name": "xtl",
+              "fieldName": "xtl",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "ytl",
+              "fieldName": "ytl",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "xtr",
+              "fieldName": "xtr",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "ytr",
+              "fieldName": "ytr",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "xbr",
+              "fieldName": "xbr",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "ybr",
+              "fieldName": "ybr",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "xbl",
+              "fieldName": "xbl",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "ybl",
+              "fieldName": "ybl",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "xtl",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ytl",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "xtr",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ytr",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "xbr",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ybr",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "xbl",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "ybl",
+              "type": {
+                "text": "number"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "MmQuadwarp",
+          "declaration": {
+            "name": "MmQuadwarp",
+            "module": "src/mm-quadwarp.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "mm-quadwarp",
+          "declaration": {
+            "name": "MmQuadwarp",
+            "module": "src/mm-quadwarp.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/mm-webcam.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "customElement": true,
+          "name": "MmWebcam",
+          "tagName": "mm-webcam",
+          "superclass": {
+            "name": "HTMLElement"
+          },
+          "attributes": [
+            {
+              "name": "cam-id",
+              "fieldName": "camId",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "fps",
+              "fieldName": "fps",
+              "type": {
+                "text": "number"
+              },
+              "default": "30"
+            }
+          ],
+          "members": [
+            {
+              "kind": "method",
+              "name": "start"
+            },
+            {
+              "kind": "method",
+              "name": "stop"
+            },
+            {
+              "kind": "method",
+              "name": "send"
+            },
+            {
+              "kind": "field",
+              "name": "camId",
+              "type": {
+                "text": "string"
+              },
+              "mm": {
+                "optionsFrom": "cameras"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "fps",
+              "type": {
+                "text": "number"
+              },
+              "default": "30",
+              "mm": {
+                "min": 0,
+                "max": 60
+              }
+            },
+            {
+              "kind": "field",
+              "name": "cameras",
+              "readonly": true,
+              "type": {
+                "text": "Array<{label: string, value: string}>"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "stream",
+              "type": {
+                "text": "CustomEvent<CanvasImageSource>"
+              },
+              "mm": {
+                "type": "image"
+              }
+            },
+            {
+              "name": "image",
+              "type": {
+                "text": "CustomEvent<CanvasImageSource>"
+              },
+              "mm": {
+                "type": "image"
+              }
+            },
+            {
+              "name": "cameras",
+              "type": {
+                "text": "CustomEvent<Array<{label: string, value: string}>>"
+              }
+            },
+            {
+              "name": "mm-webcam-start",
+              "type": {
+                "text": "Event"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "MmWebcam",
+          "declaration": {
+            "name": "MmWebcam",
+            "module": "src/mm-webcam.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "mm-webcam",
+          "declaration": {
+            "name": "MmWebcam",
+            "module": "src/mm-webcam.js"
+          }
+        }
+      ]
+    }
+  ]
+}

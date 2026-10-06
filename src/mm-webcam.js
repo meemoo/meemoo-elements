@@ -1,22 +1,27 @@
 const childTemplate = document.createElement("template");
 childTemplate.innerHTML = `
-  <video class="mm-webcam--video" autoplay></video>
+  <video class="mm-webcam--video" autoplay playsinline></video>
 `;
 
-class MmWebcam extends HTMLElement {
+export class MmWebcam extends HTMLElement {
+  static mmManifest = () =>
+    import("./mm-webcam.manifest.js").then((m) => m.default);
+
+  static get observedAttributes() {
+    return ["cam-id", "fps"];
+  }
+
   constructor() {
     super();
 
     this.videoEl = null;
     this.stream = null;
-    this._camId = null;
-    this._camInfo = [];
-    this._lastTimeUpdate = -1;
     this.frameRate = 30;
-  }
-
-  static get observedAttributes() {
-    return ["camId"];
+    this._camId = null;
+    this._cameras = [];
+    this._fps = 30;
+    this._loop = 0;
+    this._lastFrame = 0;
   }
 
   set camId(val) {
@@ -33,6 +38,17 @@ class MmWebcam extends HTMLElement {
     return this._camId;
   }
 
+  set fps(val) {
+    this._fps = Number(val) || 0;
+  }
+  get fps() {
+    return this._fps;
+  }
+
+  get cameras() {
+    return this._cameras;
+  }
+
   get currentTime() {
     if (this.videoEl) {
       return this.videoEl.currentTime;
@@ -40,39 +56,19 @@ class MmWebcam extends HTMLElement {
     return null;
   }
 
-  mmManifest() {
-    return {
-      name: "MmWebcam",
-      tagName: "mm-webcam",
-      members: [
-        { kind: "method", name: "start" },
-        { kind: "method", name: "stop" },
-        { kind: "field", name: "camId", options: this._camInfo },
-        // Idea to wire directly to member el events, without translation
-        { kind: "field", name: "videoEl", type: "HTMLVideoElement" },
-        // Read-only members?
-        { kind: "field", name: "frameRate", type: "number" },
-      ],
-      // events: [
-      //   {
-      //     name: "mm-webcam-start",
-      //     description:
-      //       "fired when permission is granted and webcam stream starts",
-      //   },
-      // ],
-    };
-  }
-
-  _mmManifestChanged() {
-    this.dispatchEvent(new Event("mm-manifest-changed"));
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "cam-id") this.camId = newValue;
+    if (name === "fps") this.fps = newValue;
   }
 
   connectedCallback() {
-    this.appendChild(childTemplate.content.cloneNode(true));
-    this.videoEl = this.querySelector(".mm-webcam--video");
-    this.videoEl.addEventListener("play", () =>
-      this.dispatchEvent(new Event("mm-webcam-start"))
-    );
+    if (!this.videoEl) {
+      this.appendChild(childTemplate.content.cloneNode(true));
+      this.videoEl = this.querySelector(".mm-webcam--video");
+      this.videoEl.addEventListener("play", () =>
+        this.dispatchEvent(new Event("mm-webcam-start"))
+      );
+    }
     // Will only succeed if permission was previously given and remembered
     this.enumerateDevices();
   }
@@ -86,15 +82,15 @@ class MmWebcam extends HTMLElement {
       navigator.mediaDevices
         .enumerateDevices()
         .then((devices) => {
-          const camInfo = [];
+          const cameras = [];
           for (let device of devices) {
             const { kind, label, deviceId } = device;
             if (kind === "videoinput") {
-              camInfo.push({ label, value: deviceId });
+              cameras.push({ label, value: deviceId });
             }
           }
-          this._camInfo = camInfo;
-          this._mmManifestChanged();
+          this._cameras = cameras;
+          this.dispatchEvent(new CustomEvent("cameras", { detail: cameras }));
         })
         .catch(() => {});
     }
@@ -116,9 +112,7 @@ class MmWebcam extends HTMLElement {
           const mediaTrackSettings = track.getSettings();
           this.frameRate = mediaTrackSettings.frameRate;
           if (!this._camId) {
-            // So mm-debug can show the correct one selected
             this._camId = mediaTrackSettings.deviceId;
-            this._mmManifestChanged();
           }
         });
 
@@ -127,6 +121,7 @@ class MmWebcam extends HTMLElement {
         } catch (error) {
           this.videoEl.src = URL.createObjectURL(this.stream);
         }
+        this._startLoop();
         // We can only list devices after permission to connect
         this.enumerateDevices();
       })
@@ -134,9 +129,41 @@ class MmWebcam extends HTMLElement {
   }
 
   stop() {
+    this._loop++;
     if (this.stream) {
       this.stream.getTracks().forEach((track) => track.stop());
     }
+  }
+
+  send() {
+    if (this.videoEl && this.videoEl.videoWidth) {
+      this.dispatchEvent(new CustomEvent("image", { detail: this.videoEl }));
+    }
+  }
+
+  _startLoop() {
+    const loop = ++this._loop;
+    const video = this.videoEl;
+    const schedule = () => {
+      if (video.requestVideoFrameCallback) {
+        video.requestVideoFrameCallback(onFrame);
+      } else {
+        requestAnimationFrame(onFrame);
+      }
+    };
+    const onFrame = (now) => {
+      if (loop !== this._loop) return;
+      if (
+        this._fps > 0 &&
+        video.videoWidth &&
+        now - this._lastFrame >= 1000 / this._fps - 5
+      ) {
+        this._lastFrame = now;
+        this.dispatchEvent(new CustomEvent("stream", { detail: video }));
+      }
+      schedule();
+    };
+    schedule();
   }
 }
 

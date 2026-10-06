@@ -3,8 +3,11 @@
   "version": "0.0.2",
   "description": "Do some meemoo.org things (playful media apps) with modern vanilla web components.",
   "main": "index.html",
+  "type": "module",
+  "customElements": "custom-elements.json",
   "scripts": {
-    "start": "serve ."
+    "start": "serve .",
+    "manifest": "node scripts/manifest.mjs"
   },
   "repository": {
     "type": "git",

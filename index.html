@@ -1,41 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <title>meemoo-elements demo 🎛</title>
     <style>
       body {
         /* System font stack */
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+          "Open Sans", "Helvetica Neue", sans-serif;
       }
-      .mm-debug--inspect {
-        display: flex;
-        /* flex-direction: column; */
-        gap: 16px;
-        flex-wrap: wrap;
+      .mm-debug--line {
+        min-height: 1.6em;
+        overflow-wrap: anywhere;
       }
       .mm-debug--tag {
-        padding-top: 16px;
-        width: 100%;
+        color: #22663a;
       }
-      label {
-        display: flex;
-        gap: 8px;
+      .mm-debug--event,
+      .mm-debug--readonly {
+        color: #666;
       }
-      input[type="number"] {
+      #debug input[type="number"] {
         width: 5em;
+      }
+      #debug input[type="text"] {
+        width: 8em;
+      }
+      #debug input,
+      #debug select,
+      #debug button {
+        font: inherit;
       }
       #debug {
         position: fixed;
         top: 8px;
-        right: 8px;
+        right: 64px;
+        bottom: 8px;
         border-radius: 8px;
         border: 1px dashed rgba(0, 0, 0, 0.5);
-        padding: 8px;
-        max-height: 80%;
+        padding: 8px 12px;
         overflow: auto;
-        width: 240px;
+        width: 340px;
         max-width: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 12px;
       }
     </style>
   </head>
@@ -45,50 +54,26 @@
     <!-- This "meta" mm-debug shows the "hidden" control on the inner mm-debug. 🤗 -->
     <!-- <mm-debug shallow> -->
     <mm-debug mount="#debug">
-      <h2>mm-webcam</h2>
-      <mm-webcam></mm-webcam>
-      <h2>mm-quadwarp</h2>
-      <p>
-        Takes position of 4 corners and adds a transform matrix to the first
-        child. Potentially useful for real-size projections onto a table or
-        object.
-      </p>
-      <p>The first one shows a PDF in an iframe.</p>
-      <mm-quadwarp
-        xtl="232"
-        ytl="800"
-        xtr="794"
-        ytr="667"
-        xbr="794"
-        ybr="1600"
-        xbl="200"
-        ybl="1185"
-      >
-        <iframe src="./static/a4Calibration.pdf" width="720" height="720">
-        </iframe>
-      </mm-quadwarp>
-      <p>The second one has an mm-webcam inside.</p>
-      <mm-quadwarp
-        xtl="794"
-        ytl="667"
-        xtr="1241"
-        ytr="805"
-        xbr="1288"
-        ybr="1366"
-        xbl="794"
-        ybl="1600"
-      >
-        <mm-webcam
-          style="width: 640px; height: 480px; background-color: pink"
-        ></mm-webcam>
-      </mm-quadwarp>
+      <mm-graph>
+        <h1>mm-elements demo</h1>
+        <button id="start">start camera</button>
+        <button id="add">add frame</button>
+        <button id="reset">start over</button>
+        <h2>mm-webcam</h2>
+        <mm-webcam id="cam"></mm-webcam>
+        <h2>mm-animation</h2>
+        <mm-animation id="anim" fps="6"></mm-animation>
+        <mm-wire from="start" out="click" to="cam" in="start"></mm-wire>
+        <mm-wire from="add" out="click" to="cam" in="send"></mm-wire>
+        <mm-wire from="cam" out="image" to="anim" in="push"></mm-wire>
+        <mm-wire from="reset" out="click" to="anim" in="clear"></mm-wire>
+      </mm-graph>
     </mm-debug>
     <!-- </mm-debug> -->
 
     <div id="debug"></div>
 
+    <script type="module" src="./src/mm-graph.js"></script>
     <script type="module" src="./src/mm-debug.js"></script>
-    <script type="module" src="./src/mm-webcam.js"></script>
-    <script type="module" src="./src/mm-quadwarp.js"></script>
   </body>
 </html>
