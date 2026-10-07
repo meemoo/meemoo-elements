@@ -7,7 +7,8 @@
   "customElements": "custom-elements.json",
   "scripts": {
     "start": "serve .",
-    "manifest": "node scripts/manifest.mjs"
+    "manifest": "node scripts/manifest.mjs",
+    "test": "node --test tests/*.test.js"
   },
   "repository": {
     "type": "git",

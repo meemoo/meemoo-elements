@@ -11,7 +11,11 @@ export default {
     { name: "fps", fieldName: "fps", type: { text: "number" }, default: "30" },
   ],
   members: [
-    { kind: "method", name: "start" },
+    {
+      kind: "method",
+      name: "start",
+      returns: { type: { text: "Promise<MediaStream | undefined>" } },
+    },
     { kind: "method", name: "stop" },
     { kind: "method", name: "send" },
     {
@@ -40,7 +44,9 @@ export default {
     {
       name: "cameras",
       type: { text: "CustomEvent<Array<{label: string, value: string}>>" },
+      mm: { kind: "state", property: "cameras" },
     },
-    { name: "mm-webcam-start", type: { text: "Event" } },
+    { name: "mm-webcam-start", type: { text: "Event" }, mm: { kind: "signal" } },
+    { name: "error", type: { text: "CustomEvent<Error>" } },
   ],
 };

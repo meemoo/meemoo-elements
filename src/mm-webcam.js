@@ -22,13 +22,16 @@ export class MmWebcam extends HTMLElement {
     this._fps = 30;
     this._loop = 0;
     this._lastFrame = 0;
+    this._generation = 0;
+    this._starting = false;
+    this._streamUrl = null;
   }
 
   set camId(val) {
     this._camId = val ? val : null;
-    if (this.stream) {
+    if (this.stream || this._starting) {
       if (this._camId) {
-        this.start();
+        this.start().catch((error) => this._reportError(error));
       } else {
         this.stop();
       }
@@ -77,62 +80,91 @@ export class MmWebcam extends HTMLElement {
     this.stop();
   }
 
-  enumerateDevices() {
+  async enumerateDevices() {
     if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) => {
-          const cameras = [];
-          for (let device of devices) {
-            const { kind, label, deviceId } = device;
-            if (kind === "videoinput") {
-              cameras.push({ label, value: deviceId });
-            }
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = [];
+        for (let device of devices) {
+          const { kind, label, deviceId } = device;
+          if (kind === "videoinput") {
+            cameras.push({ label, value: deviceId });
           }
-          this._cameras = cameras;
-          this.dispatchEvent(new CustomEvent("cameras", { detail: cameras }));
-        })
-        .catch(() => {});
+        }
+        this._cameras = cameras;
+        this.dispatchEvent(new CustomEvent("cameras", { detail: cameras }));
+      } catch (error) {
+        this._reportError(error);
+      }
     }
   }
 
-  start() {
-    if (this.stream) {
-      this.stop();
-    }
-    navigator.mediaDevices
-      .getUserMedia({
+  async start() {
+    this.stop();
+    const generation = this._generation;
+    this._starting = true;
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: this._camId ? { deviceId: this._camId } : true,
         audio: false,
-      })
-      .then((mediaStream) => {
-        this.stream = mediaStream;
+      });
+      if (generation !== this._generation) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+        return undefined;
+      }
+      this.stream = mediaStream;
 
-        this.stream.getVideoTracks().forEach((track) => {
-          const mediaTrackSettings = track.getSettings();
-          this.frameRate = mediaTrackSettings.frameRate;
-          if (!this._camId) {
-            this._camId = mediaTrackSettings.deviceId;
-          }
-        });
-
-        try {
-          this.videoEl.srcObject = this.stream;
-        } catch (error) {
-          this.videoEl.src = URL.createObjectURL(this.stream);
+      this.stream.getVideoTracks().forEach((track) => {
+        const mediaTrackSettings = track.getSettings();
+        this.frameRate = mediaTrackSettings.frameRate;
+        if (!this._camId) {
+          this._camId = mediaTrackSettings.deviceId;
         }
-        this._startLoop();
-        // We can only list devices after permission to connect
-        this.enumerateDevices();
-      })
-      .catch(() => {});
+      });
+
+      try {
+        this.videoEl.srcObject = this.stream;
+      } catch (error) {
+        this._streamUrl = URL.createObjectURL(this.stream);
+        this.videoEl.src = this._streamUrl;
+      }
+      this._startLoop();
+      this._starting = false;
+      // We can only list devices after permission to connect
+      this.enumerateDevices();
+      return mediaStream;
+    } catch (error) {
+      if (generation !== this._generation) return undefined;
+      this.stop();
+      throw error instanceof Error ? error : new Error(String(error));
+    }
   }
 
   stop() {
+    this._generation++;
+    this._starting = false;
     this._loop++;
-    if (this.stream) {
-      this.stream.getTracks().forEach((track) => track.stop());
+    const stream = this.stream;
+    this.stream = null;
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
     }
+    if (this.videoEl) {
+      if (!this._streamUrl) this.videoEl.srcObject = null;
+      this.videoEl.removeAttribute("src");
+    }
+    if (this._streamUrl) {
+      URL.revokeObjectURL(this._streamUrl);
+      this._streamUrl = null;
+    }
+  }
+
+  _reportError(error) {
+    this.dispatchEvent(
+      new CustomEvent("error", {
+        detail: error instanceof Error ? error : new Error(String(error)),
+      })
+    );
   }
 
   send() {

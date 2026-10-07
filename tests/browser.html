@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>meemoo browser contract tests</title></head>
+  <body>
+    <h1>Browser contract tests</h1>
+    <pre id="result">Running…</pre>
+    <script type="module">
+      import "../src/mm-graph.js";
+      import "../src/mm-debug.js";
+      import "../src/mm-webcam.js";
+
+      const result = document.querySelector("#result");
+      const checks = [];
+      function check(condition, message) {
+        if (!condition) throw new Error(message);
+        checks.push(message);
+      }
+      class BrowserSource extends HTMLElement {
+        static mmManifest = async () => ({
+          tagName: "browser-source",
+          members: [{ kind: "field", name: "value", readonly: true }],
+          events: [
+            { name: "message" },
+            { name: "state", mm: { kind: "state", property: "value" } },
+          ],
+        });
+        value = null;
+        message = "must not replay";
+      }
+      class BrowserTarget extends HTMLElement {
+        static mmManifest = async () => ({
+          tagName: "browser-target",
+          members: [
+            { kind: "field", name: "value", type: { text: "string" } },
+            { kind: "method", name: "trigger" },
+          ],
+        });
+        value = "initial";
+        calls = [];
+        trigger(...args) { this.calls.push(args); }
+      }
+      customElements.define("browser-source", BrowserSource);
+      customElements.define("browser-target", BrowserTarget);
+
+      try {
+        const graph = document.createElement("mm-graph");
+        graph.id = "browser-app";
+        graph.innerHTML = `
+          <button id="go">go</button>
+          <browser-source id="source"></browser-source>
+          <browser-target id="target"></browser-target>
+          <mm-webcam id="cam"></mm-webcam>
+          <mm-wire from="source" out="message" to="target" in="value"></mm-wire>
+          <mm-wire from="go" out="click" to="target" in="trigger"></mm-wire>
+          <mm-wire from="source" out="message"></mm-wire>
+        `;
+        document.body.append(graph);
+        const [wire, trigger, dangling] = graph.querySelectorAll("mm-wire");
+        const source = graph.querySelector("#source");
+        const target = graph.querySelector("#target");
+        await Promise.all([wire.connect(), trigger.connect(), dangling.connect()]);
+        check(wire.status === "connected", "message wire connects");
+        check(target.value === "initial", "messages do not replay matching properties");
+        source.dispatchEvent(new CustomEvent("message", { detail: null }));
+        check(target.value === null, "null payload clears the target");
+        graph.querySelector("#go").click();
+        check(target.calls.length === 1 && target.calls[0].length === 0,
+          "native click invokes a command with zero arguments");
+        check(dangling.status === "pending" && dangling.reason === "incomplete",
+          "dangling wires remain valid pending objects");
+        wire.out = "state";
+        source.value = 42;
+        await wire.connect();
+        check(target.value === 42, "declared state synchronizes on connection");
+        wire.in = "typo";
+        await wire.connect();
+        check(wire.status === "error" && !Object.hasOwn(target, "typo"),
+          "invalid ports are diagnostics, not new properties");
+
+        const debug = document.createElement("mm-debug");
+        debug.setAttribute("for", graph.id);
+        document.body.append(debug);
+        await debug._render();
+        debug.drawWires();
+        check(Boolean(debug.querySelector(".mm-debug--wire-error")),
+          "inspector draws the runtime's errored connection");
+        check(debug.textContent.includes("invalid-connection"),
+          "inspector displays the runtime diagnostic reason");
+        check(debug.textContent.includes('Unknown or readonly input "typo"'),
+          "inspector displays the actual error message");
+
+        const cam = graph.querySelector("#cam");
+        let resolve, stopped = 0;
+        const original = navigator.mediaDevices.getUserMedia;
+        navigator.mediaDevices.getUserMedia = () => new Promise((done) => { resolve = done; });
+        try {
+          const pending = cam.start();
+          cam.stop();
+          resolve({ getTracks: () => [{ stop() { stopped++; } }] });
+          check(await pending === undefined && stopped === 1 && cam.stream === null,
+            "stopped camera releases a late acquisition in the browser");
+        } finally {
+          navigator.mediaDevices.getUserMedia = original;
+        }
+        result.dataset.result = "pass";
+        result.textContent = `PASS: ${checks.length} checks\n` + checks.join("\n");
+      } catch (error) {
+        result.dataset.result = "fail";
+        result.textContent = error.stack;
+        console.error(error);
+      }
+    </script>
+  </body>
+</html>

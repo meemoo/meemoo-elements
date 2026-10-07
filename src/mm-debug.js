@@ -5,6 +5,7 @@ const SVG = "http://www.w3.org/2000/svg";
 function formatValue(value, nested) {
   if (Array.isArray(value)) return `[${value.length}]`;
   if (value instanceof Element) return `<${value.localName}>`;
+  if (value instanceof Error) return value.message;
   if (value && typeof value === "object") {
     if (nested) return "{…}";
     const entries = Object.entries(value).map(
@@ -201,23 +202,13 @@ export class MmDebug extends HTMLElement {
   // In-ports on the left, out-ports on the right.
   portAnchor(el, direction, name) {
     const ports = this._ports.get(el);
-    const manifest = ports && ports.manifest;
-    let known = true;
-    if (manifest) {
-      known =
-        direction === "out"
-          ? (manifest.events || []).some((event) => event.name === name)
-          : (manifest.members || []).some(
-              (member) => member.name === name && !member.readonly
-            );
-    }
     const anchorEl = ports ? ports[direction].get(name) || ports.tag : el;
     const point = this.anchorPoint(anchorEl, direction);
     if (!point) return null;
     // The bottom of the element's inspector, where its out wires turn back.
     const blockEl = anchorEl.closest(".mm-debug") || anchorEl;
     const under = blockEl.getBoundingClientRect().bottom;
-    return { ...point, under, known };
+    return { ...point, under };
   }
 
   // Right-angle path through the points, with rounded corners.
@@ -318,10 +309,9 @@ export class MmDebug extends HTMLElement {
         this._wirePaths.set(wire, group);
       }
 
-      const root = wire.getRootNode();
-      const find = (id) => id && root.querySelector("#" + CSS.escape(id));
-      const source = find(wire.getAttribute("from"));
-      const target = find(wire.getAttribute("to"));
+      // Draw the runtime's resolved endpoints, not a second guessed connection.
+      const source = wire.source;
+      const target = wire.target;
       const a =
         source && this.portAnchor(source, "out", wire.getAttribute("out"));
       const b =
@@ -332,10 +322,11 @@ export class MmDebug extends HTMLElement {
       }
       group.style.display = "";
 
-      const known = a.known && b.known;
+      const known = wire.status === "connected";
       group.setAttribute(
         "class",
-        "mm-debug--wire" + (known ? "" : " mm-debug--wire-unknown")
+        "mm-debug--wire mm-debug--wire-" + wire.status +
+          (known ? "" : " mm-debug--wire-unknown")
       );
       group.setAttribute("stroke-dasharray", known ? "none" : "2 6");
 
@@ -479,8 +470,18 @@ export class MmDebug extends HTMLElement {
         buttonEl.className = "mm-debug--button";
         buttonEl.innerText = name + "()";
         buttonEl.addEventListener("click", () => {
-          mmChild[name]();
-          refresh();
+          const failed = (error) => {
+            buttonEl.title = String(error);
+            buttonEl.classList.add("mm-debug--error");
+          };
+          buttonEl.title = "";
+          buttonEl.classList.remove("mm-debug--error");
+          try {
+            Promise.resolve(mmChild[name]()).then(refresh, failed);
+            refresh();
+          } catch (error) {
+            failed(error);
+          }
         });
         lineEl.appendChild(buttonEl);
       }

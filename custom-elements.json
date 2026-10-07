@@ -249,6 +249,12 @@
               "type": {
                 "text": "string"
               }
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              }
             }
           ],
           "members": [
@@ -278,6 +284,58 @@
               "name": "in",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "connect"
+            },
+            {
+              "kind": "field",
+              "name": "status",
+              "readonly": true,
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "reason",
+              "readonly": true,
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "readonly": true,
+              "type": {
+                "text": "Error | null"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "source",
+              "readonly": true,
+              "type": {
+                "text": "Element | null"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "target",
+              "readonly": true,
+              "type": {
+                "text": "Element | null"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "wire-status",
+              "type": {
+                "text": "CustomEvent<{status: string, reason: string, error: Error | null}>"
               }
             }
           ]
@@ -499,7 +557,12 @@
           "members": [
             {
               "kind": "method",
-              "name": "start"
+              "name": "start",
+              "returns": {
+                "type": {
+                  "text": "Promise<MediaStream | undefined>"
+                }
+              }
             },
             {
               "kind": "method",
@@ -563,12 +626,25 @@
               "name": "cameras",
               "type": {
                 "text": "CustomEvent<Array<{label: string, value: string}>>"
+              },
+              "mm": {
+                "kind": "state",
+                "property": "cameras"
               }
             },
             {
               "name": "mm-webcam-start",
               "type": {
                 "text": "Event"
+              },
+              "mm": {
+                "kind": "signal"
+              }
+            },
+            {
+              "name": "error",
+              "type": {
+                "text": "CustomEvent<Error>"
               }
             }
           ]

@@ -20,16 +20,27 @@ const wire = {
   name: "MmWire",
   tagName: "mm-wire",
   superclass: { name: "HTMLElement" },
-  attributes: wireAttributes.map((name) => ({
-    name,
-    fieldName: name,
-    type: string,
-  })),
-  members: wireAttributes.map((name) => ({
-    kind: "field",
-    name,
-    type: string,
-  })),
+  attributes: [
+    ...wireAttributes.map((name) => ({ name, fieldName: name, type: string })),
+    { name: "disabled", type: { text: "boolean" } },
+  ],
+  members: [
+    ...wireAttributes.map((name) => ({ kind: "field", name, type: string })),
+    { kind: "method", name: "connect" },
+    ...["status", "reason"].map((name) => ({
+      kind: "field", name, readonly: true, type: string,
+    })),
+    { kind: "field", name: "error", readonly: true, type: { text: "Error | null" } },
+    ...["source", "target"].map((name) => ({
+      kind: "field", name, readonly: true, type: { text: "Element | null" },
+    })),
+  ],
+  events: [
+    {
+      name: "wire-status",
+      type: { text: "CustomEvent<{status: string, reason: string, error: Error | null}>" },
+    },
+  ],
 };
 
 export default [graph, wire];
