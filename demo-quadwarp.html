@@ -43,43 +43,41 @@
   <body>
     <a href="https://github.com/meemoo/meemoo-elements">About</a>
 
-    <mm-debug mount="#debug">
-      <mm-graph>
-        <h2>mm-quadwarp</h2>
-        <p>
-          Takes position of 4 corners and adds a transform matrix to the first child. Potentially
-          useful for real-size projections onto a table or object.
-        </p>
-        <p>The first one shows a PDF in an iframe.</p>
-        <mm-quadwarp
-          xtl="232"
-          ytl="800"
-          xtr="794"
-          ytr="667"
-          xbr="794"
-          ybr="1600"
-          xbl="200"
-          ybl="1185"
-        >
-          <iframe src="./static/a4Calibration.pdf" width="720" height="720"> </iframe>
-        </mm-quadwarp>
-        <p>The second one has an mm-webcam inside.</p>
-        <mm-quadwarp
-          xtl="794"
-          ytl="667"
-          xtr="1241"
-          ytr="805"
-          xbr="1288"
-          ybr="1366"
-          xbl="794"
-          ybl="1600"
-        >
-          <mm-webcam style="width: 640px; height: 480px; background-color: pink"></mm-webcam>
-        </mm-quadwarp>
-      </mm-graph>
-    </mm-debug>
+    <mm-graph id="quadwarp-app">
+      <h2>mm-quadwarp</h2>
+      <p>
+        Takes position of 4 corners and adds a transform matrix to the first child. Potentially
+        useful for real-size projections onto a table or object.
+      </p>
+      <p>The first one shows a PDF in an iframe.</p>
+      <mm-quadwarp
+        xtl="232"
+        ytl="800"
+        xtr="794"
+        ytr="667"
+        xbr="794"
+        ybr="1600"
+        xbl="200"
+        ybl="1185"
+      >
+        <iframe src="./static/a4Calibration.pdf" width="720" height="720"> </iframe>
+      </mm-quadwarp>
+      <p>The second one has an mm-webcam inside.</p>
+      <mm-quadwarp
+        xtl="794"
+        ytl="667"
+        xtr="1241"
+        ytr="805"
+        xbr="1288"
+        ybr="1366"
+        xbl="794"
+        ybl="1600"
+      >
+        <mm-webcam style="width: 640px; height: 480px; background-color: pink"></mm-webcam>
+      </mm-quadwarp>
+    </mm-graph>
 
-    <div id="debug"></div>
+    <mm-debug id="debug" for="quadwarp-app"></mm-debug>
 
     <script type="module" src="./src/mm-debug.js"></script>
     <script type="module" src="./src/mm-graph.js"></script>

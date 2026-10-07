@@ -9,6 +9,10 @@
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
           "Open Sans", "Helvetica Neue", sans-serif;
       }
+      .mm-debug {
+        padding: 0 8px;
+        background: rgba(255, 255, 255, 0.75);
+      }
       .mm-debug--line {
         min-height: 1.6em;
         overflow-wrap: anywhere;
@@ -38,11 +42,11 @@
         bottom: 8px;
         border-radius: 8px;
         border: 1px dashed rgba(0, 0, 0, 0.5);
-        padding: 8px 12px;
+        padding: 8px 0;
         overflow: auto;
-        width: 340px;
+        width: 240px;
         max-width: 50%;
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.75);
         font-family: ui-monospace, Menlo, Consolas, monospace;
         font-size: 12px;
       }
@@ -51,27 +55,23 @@
   <body>
     <a href="https://github.com/meemoo/meemoo-elements">About</a>
 
-    <!-- This "meta" mm-debug shows the "hidden" control on the inner mm-debug. 🤗 -->
-    <!-- <mm-debug shallow> -->
-    <mm-debug mount="#debug">
-      <mm-graph>
-        <h1>mm-elements demo</h1>
-        <button id="start">start camera</button>
-        <button id="add">add frame</button>
-        <button id="reset">start over</button>
-        <h2>mm-webcam</h2>
-        <mm-webcam id="cam"></mm-webcam>
-        <h2>mm-animation</h2>
-        <mm-animation id="anim" fps="6"></mm-animation>
-        <mm-wire from="start" out="click" to="cam" in="start"></mm-wire>
-        <mm-wire from="add" out="click" to="cam" in="send"></mm-wire>
-        <mm-wire from="cam" out="image" to="anim" in="push"></mm-wire>
-        <mm-wire from="reset" out="click" to="anim" in="clear"></mm-wire>
-      </mm-graph>
-    </mm-debug>
-    <!-- </mm-debug> -->
+    <mm-graph id="example-app">
+      <h1>mm-elements demo</h1>
+      <button id="start">start camera</button>
+      <button id="add">add frame</button>
+      <button id="reset">start over</button>
+      <h2>mm-webcam</h2>
+      <mm-webcam id="cam"></mm-webcam>
+      <h2>mm-animation</h2>
+      <mm-animation id="anim" fps="6"></mm-animation>
+      <mm-wire from="start" out="click" to="cam" in="start"></mm-wire>
+      <mm-wire from="add" out="click" to="cam" in="send"></mm-wire>
+      <mm-wire from="cam" out="image" to="anim" in="push"></mm-wire>
+      <!--<mm-wire from="reset" out="click" to="cam" in="stop"></mm-wire>-->
+      <mm-wire from="reset" out="click" to="anim" in="clear"></mm-wire>
+    </mm-graph>
 
-    <div id="debug"></div>
+    <mm-debug id="debug" for="example-app"></mm-debug>
 
     <script type="module" src="./src/mm-graph.js"></script>
     <script type="module" src="./src/mm-debug.js"></script>

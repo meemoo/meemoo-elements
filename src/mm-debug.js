@@ -52,140 +52,148 @@ export class MmDebug extends HTMLElement {
   constructor() {
     super();
 
-    const mountQuery = this.getAttribute("mount");
-    if (mountQuery) {
-      this.mountEl = document.querySelector(mountQuery);
-    }
     this._abort = null;
+    this._targetEl = null;
     this._inspectors = [];
     // element => { manifest, tag, in: Map(name => el), out: Map(name => el) }
     this._ports = new WeakMap();
     this._wirePaths = new Map();
+    // port line => { direction, dot }
+    this._portDots = new Map();
     this._wiresEl = null;
   }
 
   static get observedAttributes() {
-    return ["hidden"];
+    return ["for"];
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "hidden") this.hidden = newValue !== null;
-  }
-
-  set hidden(val) {
-    this._hidden = Boolean(val);
-    for (const el of this._inspectors) {
-      el.style.display = this._hidden ? "none" : "block";
-    }
-    if (this._wiresEl) {
-      this._wiresEl.style.display = this._hidden ? "none" : "block";
-    }
-  }
-  get hidden() {
-    return Boolean(this._hidden);
+  attributeChangedCallback() {
+    if (this.isConnected) this._render();
   }
 
   connectedCallback() {
+    this._render();
+  }
+
+  disconnectedCallback() {
+    this._clear();
+  }
+
+  _clear() {
+    if (this._abort) this._abort.abort();
+    this._abort = null;
+    this._targetEl = null;
+    for (const el of this._inspectors) el.remove();
+    this._inspectors = [];
+    if (this._wiresEl) this._wiresEl.remove();
+    this._wiresEl = null;
+    this._wirePaths.clear();
+    this._portDots.clear();
+  }
+
+  async _render() {
+    this._clear();
     const { signal } = (this._abort = new AbortController());
 
-    // Wait for child custom elements load
-    const undefinedElements = this.querySelectorAll(":not(:defined)");
-    const definedPromises = [...undefinedElements].map((el) =>
-      customElements.whenDefined(el.localName)
-    );
-    const allElements = this.hasAttribute("shallow")
-      ? this.children
-      : this.querySelectorAll("*");
-
-    Promise.all(definedPromises).then(async () => {
-      const wired = new Set();
-      for (const wire of this.querySelectorAll("mm-wire")) {
-        wired.add(wire.getAttribute("from")).add(wire.getAttribute("to"));
-      }
-      // Custom elements with a manifest, known HTML elements, wire ends.
-      const inspected = [...allElements].filter(
-        (el) =>
-          typeof el.constructor.mmManifest === "function" ||
-          htmlElements[el.localName] ||
-          (el.id && wired.has(el.id))
+    if (document.readyState === "loading") {
+      await new Promise((resolve) =>
+        document.addEventListener("DOMContentLoaded", resolve, { once: true })
       );
+      if (signal.aborted) return;
+    }
 
-      // Elements whose closing tag comes after their inspected descendants.
-      const open = [];
-      // mm-graph's children are not indented.
-      const depth = () =>
-        open.filter((el) => el.localName !== "mm-graph").length;
-      const closeUntil = (el) => {
-        while (open.length && !(el && open.at(-1).contains(el))) {
-          const closed = open.pop();
-          const lineEl = document.createElement("div");
-          lineEl.className = "mm-debug--line mm-debug--tag";
-          lineEl.textContent = `</${closed.localName}>`;
-          this.addInspector(depth(), closed).appendChild(lineEl);
-        }
-      };
-
-      for (const mmChild of inspected) {
-        let manifest = htmlElements[mmChild.localName] || null;
-        if (typeof mmChild.constructor.mmManifest === "function") {
-          manifest = await mmChild.constructor.mmManifest();
-          if (signal.aborted) return;
-        }
-        if (this.mountEl) closeUntil(mmChild);
-        const isParent =
-          Boolean(this.mountEl) &&
-          inspected.some((el) => el !== mmChild && mmChild.contains(el));
-        const inspectEl = this.addInspector(depth(), mmChild);
-        this.mountInspector(mmChild, inspectEl, manifest, signal, isParent);
-        if (isParent) open.push(mmChild);
-      }
-      closeUntil(null);
-    });
+    const id = this.getAttribute("for");
+    const target =
+      id && this.getRootNode().querySelector("#" + CSS.escape(id));
+    if (!target) {
+      console.warn("mm-debug: target not found", this);
+      return;
+    }
+    this._targetEl = target;
 
     // Wires draw behind the inspectors.
     this._wiresEl = document.createElementNS(SVG, "svg");
     this._wiresEl.setAttribute("class", "mm-debug--wires");
     this._wiresEl.style.cssText =
       "position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none";
-    this._wiresEl.style.display = this._hidden ? "none" : "block";
-    if (this.mountEl) {
-      this.mountEl.before(this._wiresEl);
-    } else {
-      this.prepend(this._wiresEl);
-    }
+    this.prepend(this._wiresEl);
     const draw = () => {
       if (signal.aborted) return;
       this.drawWires();
       requestAnimationFrame(draw);
     };
     requestAnimationFrame(draw);
+
+    // Wait for custom elements load
+    const undefinedElements = [
+      target,
+      ...target.querySelectorAll(":not(:defined)"),
+    ].filter((el) => el.matches(":not(:defined)"));
+    await Promise.all(
+      undefinedElements.map((el) => customElements.whenDefined(el.localName))
+    );
+    if (signal.aborted) return;
+
+    const allElements = [
+      target,
+      ...(this.hasAttribute("shallow")
+        ? target.children
+        : target.querySelectorAll("*")),
+    ];
+    const wired = new Set();
+    for (const wire of target.querySelectorAll("mm-wire")) {
+      wired.add(wire.getAttribute("from")).add(wire.getAttribute("to"));
+    }
+    // Custom elements with a manifest, known HTML elements, wire ends.
+    const inspected = allElements.filter(
+      (el) =>
+        typeof el.constructor.mmManifest === "function" ||
+        htmlElements[el.localName] ||
+        (el.id && wired.has(el.id))
+    );
+
+    // Elements whose closing tag comes after their inspected descendants.
+    const open = [];
+    // mm-graph's children are not indented.
+    const depth = () => open.filter((el) => el.localName !== "mm-graph").length;
+    const closeUntil = (el) => {
+      while (open.length && !(el && open.at(-1).contains(el))) {
+        const closed = open.pop();
+        const lineEl = document.createElement("div");
+        lineEl.className = "mm-debug--line mm-debug--tag";
+        lineEl.textContent = `</${closed.localName}>`;
+        this.addInspector(depth()).appendChild(lineEl);
+      }
+    };
+
+    for (const mmChild of inspected) {
+      let manifest = htmlElements[mmChild.localName] || null;
+      if (typeof mmChild.constructor.mmManifest === "function") {
+        manifest = await mmChild.constructor.mmManifest();
+        if (signal.aborted) return;
+      }
+      closeUntil(mmChild);
+      const isParent = inspected.some(
+        (el) => el !== mmChild && mmChild.contains(el)
+      );
+      const inspectEl = this.addInspector(depth());
+      this.mountInspector(mmChild, inspectEl, manifest, signal, isParent);
+      if (isParent) open.push(mmChild);
+    }
+    closeUntil(null);
   }
 
-  disconnectedCallback() {
-    if (this._abort) this._abort.abort();
-    for (const el of this._inspectors) el.remove();
-    this._inspectors = [];
-    if (this._wiresEl) this._wiresEl.remove();
-    this._wiresEl = null;
-    this._wirePaths.clear();
-  }
-
-  addInspector(depth, mmChild) {
+  addInspector(depth) {
     const el = document.createElement("div");
     el.className = "mm-debug";
-    el.style.display = this._hidden ? "none" : "block";
+    // Above the wires.
+    el.style.position = "relative";
     el.style.marginLeft = depth * 2 + "ch";
     const inspectEl = document.createElement("div");
     inspectEl.className = "mm-debug--inspect";
     el.appendChild(inspectEl);
     this._inspectors.push(el);
-
-    if (this.mountEl) {
-      this.mountEl.appendChild(el);
-    } else {
-      el.style.position = "relative";
-      mmChild.after(el);
-    }
+    this.appendChild(el);
     return inspectEl;
   }
 
@@ -204,27 +212,96 @@ export class MmDebug extends HTMLElement {
             );
     }
     const anchorEl = ports ? ports[direction].get(name) || ports.tag : el;
+    const point = this.anchorPoint(anchorEl, direction);
+    if (!point) return null;
+    // The bottom of the element's inspector, where its out wires turn back.
+    const blockEl = anchorEl.closest(".mm-debug") || anchorEl;
+    const under = blockEl.getBoundingClientRect().bottom;
+    return { ...point, under, known };
+  }
+
+  // Right-angle path through the points, with rounded corners.
+  roundedPath(points, radius = 8) {
+    let d = `M${points[0].x},${points[0].y}`;
+    for (let i = 1; i < points.length - 1; i++) {
+      const prev = points[i - 1];
+      const corner = points[i];
+      const next = points[i + 1];
+      const before = Math.hypot(corner.x - prev.x, corner.y - prev.y);
+      const after = Math.hypot(next.x - corner.x, next.y - corner.y);
+      const r = Math.min(radius, before / 2, after / 2);
+      if (!r) continue;
+      const fromX = corner.x - ((corner.x - prev.x) / before) * r;
+      const fromY = corner.y - ((corner.y - prev.y) / before) * r;
+      const toX = corner.x + ((next.x - corner.x) / after) * r;
+      const toY = corner.y + ((next.y - corner.y) / after) * r;
+      d += ` L${fromX},${fromY} Q${corner.x},${corner.y} ${toX},${toY}`;
+    }
+    const last = points.at(-1);
+    return d + ` L${last.x},${last.y}`;
+  }
+
+  anchorPoint(anchorEl, direction) {
     const rect = anchorEl.getBoundingClientRect();
     if (!rect.width && !rect.height) return null;
     let x = direction === "out" ? rect.right + 6 : rect.left - 6;
-    let y = rect.top + rect.height / 2;
-    if (this.mountEl && this.mountEl.contains(anchorEl)) {
+    const y = rect.top + rect.height / 2;
+    let scrolledOut = false;
+    if (this.contains(anchorEl)) {
       // On the panel's edge, so the dots peek out.
-      const clip = this.mountEl.getBoundingClientRect();
+      const clip = this.getBoundingClientRect();
       x = direction === "out" ? clip.right : clip.left;
-      y = Math.min(Math.max(y, clip.top), clip.bottom);
+      // Not clamped: wires scroll away with their ports.
+      scrolledOut = y < clip.top || y > clip.bottom;
     }
-    return { x, y, known };
+    return { x, y, scrolledOut };
+  }
+
+  // A dot for every port, wired or not.
+  drawPorts() {
+    for (const [lineEl, { direction, dot }] of this._portDots) {
+      const point = lineEl.isConnected && this.anchorPoint(lineEl, direction);
+      if (!point || point.scrolledOut) {
+        dot.style.display = "none";
+        continue;
+      }
+      dot.style.display = "";
+      if (
+        dot.getAttribute("cy") != point.y ||
+        dot.getAttribute("cx") != point.x
+      ) {
+        dot.setAttribute("cx", point.x);
+        dot.setAttribute("cy", point.y);
+      }
+    }
+  }
+
+  addPortDot(lineEl, direction) {
+    const dot = document.createElementNS(SVG, "circle");
+    dot.setAttribute("class", "mm-debug--port mm-debug--port-" + direction);
+    dot.setAttribute("r", "4");
+    dot.setAttribute("color", "darkgray");
+    dot.setAttribute("stroke", "currentColor");
+    dot.setAttribute("stroke-width", "2");
+    dot.setAttribute("fill", direction === "out" ? "white" : "currentColor");
+    // Under the wires.
+    this._wiresEl.prepend(dot);
+    this._portDots.set(lineEl, { direction, dot });
   }
 
   drawWires() {
-    const wires = new Set(this.querySelectorAll("mm-wire"));
+    this.drawPorts();
+    const wires = new Set(
+      this._targetEl ? this._targetEl.querySelectorAll("mm-wire") : []
+    );
     for (const [wire, group] of this._wirePaths) {
       if (!wires.has(wire)) {
         group.remove();
         this._wirePaths.delete(wire);
       }
     }
+    let lanes = 0;
+    const sourceLanes = new Map();
     for (const wire of wires) {
       let group = this._wirePaths.get(wire);
       if (!group) {
@@ -262,11 +339,22 @@ export class MmDebug extends HTMLElement {
       );
       group.setAttribute("stroke-dasharray", known ? "none" : "2 6");
 
-      // Far enough out that the wire shows beside the panel.
-      const bend =
-        Math.min(160, Math.max(60, Math.abs(b.y - a.y) * 0.6)) +
-        Math.abs(b.x - a.x) * 0.2;
-      const d = `M${a.x},${a.y} C${a.x + bend},${a.y} ${b.x - bend},${b.y} ${b.x},${b.y}`;
+      // Out to the right, back under the source element, then along the
+      // left side to the in-port. Each wire gets its own lane.
+      const lane = lanes++;
+      const sourceLane = sourceLanes.get(source) || 0;
+      sourceLanes.set(source, sourceLane + 1);
+      const right = a.x + 14 + sourceLane * 8;
+      const left = b.x - 14 - lane * 8;
+      const under = a.under + sourceLane * 8;
+      const d = this.roundedPath([
+        { x: a.x, y: a.y },
+        { x: right, y: a.y },
+        { x: right, y: under },
+        { x: left, y: under },
+        { x: left, y: b.y },
+        { x: b.x, y: b.y },
+      ]);
       const [path, start, end] = group.children;
       if (path.getAttribute("d") !== d) {
         path.setAttribute("d", d);
@@ -284,9 +372,10 @@ export class MmDebug extends HTMLElement {
   mountInspector(mmChild, inspectEl, manifest, signal, isParent) {
     inspectEl.innerHTML = "";
 
-    // Built-in elements stay on one line; their ports attach to it.
+    // Built-in elements only list their events.
     const builtIn = manifest && manifest === htmlElements[mmChild.localName];
-    const { members = [], events = [] } = (!builtIn && manifest) || {};
+    const { members: allMembers = [], events = [] } = manifest || {};
+    const members = builtIn ? [] : allMembers;
     const attributes = (manifest && manifest.attributes) || [];
     const { open, close } = tagSource(mmChild, manifest);
 
@@ -321,6 +410,7 @@ export class MmDebug extends HTMLElement {
       lineEl.append(fieldLabel(name) + (quoted ? '="' : " "), controlEl);
       if (quoted) lineEl.append('"');
       ports.in.set(name, lineEl);
+      this.addPortDot(lineEl, "in");
     };
 
     const addInput = (name, type, className, mm = {}) => {
@@ -378,6 +468,7 @@ export class MmDebug extends HTMLElement {
       if (kind === "method") {
         const lineEl = addPortLine("mm-debug--method");
         ports.in.set(name, lineEl);
+        this.addPortDot(lineEl, "in");
         if (parameters.some((param) => !param.optional)) {
           // Can't be called from here, but wires can attach to it.
           const names = parameters.map((param) => param.name).join(", ");
@@ -425,8 +516,25 @@ export class MmDebug extends HTMLElement {
       countEl.className = "mm-debug--count";
       countEl.textContent = "0";
       const lineEl = addPortLine("mm-debug--event");
-      lineEl.append("@" + event.name + " ", countEl);
+      lineEl.style.textAlign = "right";
+      // An event with a method of the same name (click) gets a trigger.
+      const trigger = allMembers.some(
+        (member) =>
+          member.kind === "method" &&
+          member.name === event.name &&
+          !(member.parameters || []).length
+      );
+      if (trigger) {
+        const buttonEl = document.createElement("button");
+        buttonEl.className = "mm-debug--button";
+        buttonEl.textContent = "@" + event.name;
+        buttonEl.addEventListener("click", () => mmChild[event.name]());
+        lineEl.append(buttonEl, " ", countEl);
+      } else {
+        lineEl.append("@" + event.name + " ", countEl);
+      }
       ports.out.set(event.name, lineEl);
+      this.addPortDot(lineEl, "out");
       let count = 0;
       mmChild.addEventListener(
         event.name,
@@ -443,16 +551,7 @@ export class MmDebug extends HTMLElement {
     const endEl = single ? tagEl : addLine("mm-debug--tag");
     endEl.append(">");
     const text = mmChild.textContent.trim();
-    if (mmChild.localName === "button") {
-      // Stands in for the real button.
-      const buttonEl = document.createElement("button");
-      buttonEl.className = "mm-debug--button";
-      buttonEl.textContent = text;
-      buttonEl.addEventListener("click", () => mmChild.click());
-      endEl.append(buttonEl);
-    } else if (!mmChild.children.length && text.length <= 40) {
-      endEl.append(text);
-    }
+    if (!mmChild.children.length && text.length <= 40) endEl.append(text);
     if (!isParent) endEl.append(close);
 
     refresh();

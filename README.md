@@ -10,12 +10,16 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
 - No dependencies
 - Pull in each element with one script tag
 - `<mm-*>` elements have `mmManifest` to call, which will return some info about what you can call or set on it
-- `<mm-debug>` will make some UI for setting attributes and calling methods on its child `<mm-*>` elements
+- `<mm-debug for="id">` will make some UI for setting attributes and calling methods on the `<mm-*>` elements inside the element with that id
 
 ```html
-<mm-debug>
-  <mm-webcam></mm-webcam>
-</mm-debug>
+<mm-graph id="app">
+  <button id="start">start camera</button>
+  <mm-webcam id="cam"></mm-webcam>
+  <mm-wire from="start" out="click" to="cam" in="start"></mm-wire>
+</mm-graph>
+
+<mm-debug for="app"></mm-debug>
 
 <!-- Only need the tags for the elements that you use, once, at end of body. -->
 <script
@@ -24,7 +28,7 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
 ></script>
 <script
   type="module"
-  src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-webcam.js"
+  src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-graph.js"
 ></script>
 ```
 

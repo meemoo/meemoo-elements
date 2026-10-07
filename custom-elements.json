@@ -150,7 +150,7 @@
               }
             },
             {
-              "name": "mount",
+              "name": "for",
               "type": {
                 "text": "string"
               }

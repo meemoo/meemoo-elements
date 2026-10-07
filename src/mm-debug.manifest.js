@@ -7,7 +7,7 @@ export default {
   attributes: [
     { name: "hidden", fieldName: "hidden", type: { text: "boolean" } },
     { name: "shallow", type: { text: "boolean" } },
-    { name: "mount", type: { text: "string" } },
+    { name: "for", type: { text: "string" } },
   ],
   members: [{ kind: "field", name: "hidden", type: { text: "boolean" } }],
 };
