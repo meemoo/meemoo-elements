@@ -24,11 +24,16 @@ Thanks [@WestbrookJ for the hints](https://twitter.com/WestbrookJ/status/1456958
 <!-- Only need the tags for the elements that you use, once, at end of body. -->
 <script
   type="module"
-  src="./src/mm-debug.js"
+  src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-webcam.js"
 ></script>
 <script
   type="module"
-  src="./src/mm-graph.js"
+  src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-debug.js"
+></script>
+<!-- mm-graph.js also defines mm-wire. -->
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/meemoo/meemoo-elements@main/src/mm-graph.js"
 ></script>
 ```
 
@@ -41,11 +46,11 @@ excluding nested graphs. Standalone wires resolve in their document or shadow ro
 
 Output semantics live in the event manifest's `mm` metadata:
 
-| `mm.kind` | Delivery | Initial/reconnect delivery |
-| --- | --- | --- |
-| `signal` | Invoke a method with zero arguments | Never |
-| `message` (default) | Pass `CustomEvent.detail` unchanged, including `null` | Never |
-| `state` | Read the declared `mm.property` on each event | Send the current property value |
+| `mm.kind`           | Delivery                                              | Initial/reconnect delivery      |
+| ------------------- | ----------------------------------------------------- | ------------------------------- |
+| `signal`            | Invoke a method with zero arguments                   | Never                           |
+| `message` (default) | Pass `CustomEvent.detail` unchanged, including `null` | Never                           |
+| `state`             | Read the declared `mm.property` on each event         | Send the current property value |
 
 State properties must be declared fields. There is no implicit replay based on
 matching event/property names, and no implicit `*-changed` conversion. Methods
@@ -63,12 +68,12 @@ queues, or implicit copies; ordinary JS remains the escape hatch.
 Each wire exposes readonly `status`, `reason`, `error`, `source`, and `target`.
 `wire-status` carries `{status, reason, error}` whenever status changes.
 
-| Status | Meaning |
-| --- | --- |
-| `pending` | `resolving`, `incomplete`, `awaiting-document`, `awaiting-endpoint`, or `awaiting-definition` |
-| `connected` | Ports validated and delivery active |
-| `disconnected` | `disabled` attribute present, or wire detached |
-| `error` | `invalid-connection` or `delivery-failed`, with an `Error` diagnostic |
+| Status         | Meaning                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `pending`      | `resolving`, `incomplete`, `awaiting-document`, `awaiting-endpoint`, or `awaiting-definition` |
+| `connected`    | Ports validated and delivery active                                                           |
+| `disconnected` | `disabled` attribute present, or wire detached                                                |
+| `error`        | `invalid-connection` or `delivery-failed`, with an `Error` diagnostic                         |
 
 A dangling `<mm-wire from="cam" out="image">` is valid HTML and remains pending.
 Synchronous throws and rejected method promises stop delivery and become wire
